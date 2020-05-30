@@ -25,20 +25,22 @@ const server = http.createServer((req, res) => {
             body.push(chunk)
         })
         // when finished parsing data convert body array into single object & turn to string
-        req.on('end', () => {
+        return req.on('end', () => {
             const parsedBody = Buffer.concat(body).toString()
             // grab content of message and create file with content of message
             const message = parsedBody.split('=')[1]
-            fs.writeFileSync('message.txt', message)
+            // writefilesync is synchronous and blocks rest of code after until finished - don't use unless want that behaviour
+            // fs.writeFileSync('message.txt', message)
+            fs.writeFile('message.txt', message, (err) => {
+                // set status code to 302: redirect, 
+                res.statusCode = 302
+                // set header to tell it where to redirect to
+                res.setHeader('Location', '/')
+                return res.end()
+            })
+            
         })
-
-        // set status code to 302: redirect, 
-        res.statusCode = 302
-        // set header to tell it where to redirect to
-        res.setHeader('Location', '/')
-        return res.end()
     }
-
     // sets the response headers - set type of response to text/html 
     res.setHeader('Content-Type', 'text/html')
     // sets the content of the response
